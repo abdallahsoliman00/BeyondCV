@@ -1,0 +1,8 @@
+.venv/
+.vscode/
+__pycache__/
+
+uv.lock
+.env
+.python-version
+.harper-dictionary.txt

@@ -1,0 +1,15 @@
+[project]
+name = "BeyondCV"
+version = "0.1.0"
+description = "A CV builder."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "addict>=2.4.0",
+    "colour>=0.1.5",
+    "debugpy>=1.8.20",
+    "dotenv>=0.9.9",
+    "openai>=2.36.0",
+    "pypdf>=6.11.0",
+    "pyyaml>=6.0.3",
+]

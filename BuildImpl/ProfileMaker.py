@@ -16,7 +16,6 @@ class LLMProfileMaker(LLMInvoker):
     @override
     def invoke(self, path_to_pdf: str | Path) -> Any:
         prompt: str = load_prompt(path_to_pdf=path_to_pdf)
-        print(prompt)
 
         if self.API_KEY == "":
             raise ValueError("Couldn't find an API key.")
@@ -71,5 +70,5 @@ class LLMProfileMaker(LLMInvoker):
 # For testing
 if __name__ == "__main__":
     profile_maker = LLMProfileMaker(
-        r"C:\Users\absolima\OneDrive - Capgemini\Documents\OneDrive_2026-05-05\OLIVETTI - SW Talent Needs\Software Integration Engineer\Mohamed Adel - B2 Fullstack.pdf"
+        r"C:\Users\abdal\OneDrive\Documents\Personal\CV\Abdallah_Soliman_CV.pdf"
     )

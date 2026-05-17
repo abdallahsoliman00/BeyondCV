@@ -3,10 +3,24 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
+
 class LLMInvoker(ABC):
     def __init__(self, path_to_pdf: str | Path) -> None:
         self.pdf_path: str | Path = path_to_pdf
         self.file_name: str = Path(path_to_pdf).stem
+
+        archive_path = self.get_default_archive_path()
+        if archive_path.exists():
+            use_cache = input(
+                f"Archived profile found for '{self.file_name}' at {archive_path}.\nUse cached version? [Y/n]: "
+            ).strip().lower()
+            if use_cache in ("", "y", "yes"):
+                with open(archive_path, "r") as f:
+                    self.result_json = json.load(f)
+                self.result_archive: str | Path = str(archive_path)  # pyright: ignore[reportRedeclaration]
+                print(f"Loaded profile from archive: {archive_path}")
+                return
+
         self.result_json: Any = self.invoke(path_to_pdf)
         self.result_archive: str | Path = self.archive_json()
 
@@ -15,6 +29,7 @@ class LLMInvoker(ABC):
 
     def get_result_json(self) -> Any:
         return self.result_json
+
 
     @abstractmethod
     def invoke(self, path_to_pdf: str | Path) -> Any:
@@ -34,6 +49,9 @@ class LLMInvoker(ABC):
         """
         pass
 
+    def get_default_archive_path(self) -> Path:
+        return Path.home() / ".beyondcv" / "archive" / f"{self.file_name}.json"
+
     def archive_json(self) -> str | Path:
         """
         The JSON file is saved to an archive location and the location is returned.
@@ -44,7 +62,7 @@ class LLMInvoker(ABC):
         if not self.result_json:
             raise ValueError("No JSON object available.")
 
-        json_archive: Path = Path.home() / ".beyondcv" / "archive" / f"{self.file_name}.json"
+        json_archive: Path = self.get_default_archive_path()
         json_archive.parent.mkdir(parents=True, exist_ok=True)
 
         with open(json_archive, "w") as f:

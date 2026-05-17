@@ -88,7 +88,7 @@ class Row:
         self.min_height_cm: float = min_height_cm
 
         for cell in self.cells:
-            if cell.config.width_cm >= 0.0:
+            if cell.config.width_cm <= 0.0:
                 cell.config.width_cm = self.row_width_cm * (1/len(self.cells))
 
     def add_cell(self, cell: Cell):

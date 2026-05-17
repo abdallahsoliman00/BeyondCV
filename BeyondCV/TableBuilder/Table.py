@@ -1,14 +1,30 @@
+__all__ = [
+    "CellConfig",
+    "ParagraphConfig",
+    "Paragraph",
+    "Cell",
+    "Row",
+    "Table"
+]
+
 from colour import Color
 from BeyondCV.config import bcv_config as cfg
-from BeyondCV.utils import PaperDimensions, get_paper_dimensions
+from BeyondCV.utils import PaperDimensions, get_paper_dimensions, get_page_dimensions
 
 _default_alignment: dict[str, str] = {
     "vertical": "center",       # Can be "top", "center", "bottom"
     "horizontal": "left",     # Can be "left", "center", "right"
 }
 
-_paper_size: str = str(cfg.paper_size).lower()   # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-_paper_dimensions: PaperDimensions = get_paper_dimensions(_paper_size)
+# Paper imensions are that of the whole paper
+_paper_dimensions: PaperDimensions = get_paper_dimensions(str(cfg.paper_size).lower())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+# Page dimensions are that of the space within the margins
+_page_dimensions: PaperDimensions = get_page_dimensions(
+    _paper_dimensions,
+    float(cfg.margin_left_cm), float(cfg.margin_right_cm),  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+    float(cfg.margin_top_cm), float(cfg.margin_bottom_cm)   # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+)
+
 
 class CellConfig:
     def __init__(
@@ -27,7 +43,7 @@ class CellConfig:
 class ParagraphConfig:
     def __init__(
         self,
-        font_name: str = cfg["default_font"],
+        font_name: str = cfg.default_font,  # pyright: ignore[reportUnknownMemberType]
         font_size_pt: float = 10.0,
         bold: bool = False,
         italic: bool = False,
@@ -49,9 +65,6 @@ class Paragraph:
         self.text: str = text
         self.config: ParagraphConfig = config if config else ParagraphConfig()
 
-    def create(self):
-        pass
-
 
 class Cell:
     def __init__(
@@ -62,28 +75,26 @@ class Cell:
         self.paragraphs: list[Paragraph] = [content] if isinstance(content, Paragraph) else content
         self.config: CellConfig = config if config else CellConfig()
 
-    def create(self):
-        pass
-
 
 class Row:
     def __init__(
         self,
-        cells: list[Cell],
+        cells: list[Cell] | Cell,
         min_height_cm: float = 0.45,
         row_width_cm: float = 0.0           # If this value is 0, the row is as wide as the page margins
     ):
-        self.cells: list[Cell] = cells
-        self.row_width_cm: float = row_width_cm if row_width_cm > 0.0 else _paper_dimensions.width
+        self.cells: list[Cell] = [cells] if isinstance(cells, Cell) else cells
+        self.row_width_cm: float = row_width_cm if row_width_cm > 0.0 else _page_dimensions.width
         self.min_height_cm: float = min_height_cm
 
         for cell in self.cells:
             if cell.config.width_cm >= 0.0:
                 cell.config.width_cm = self.row_width_cm * (1/len(self.cells))
 
-    def create(self):
-        pass
-    
+    def add_cell(self, cell: Cell):
+        self.cells.append(cell)
+
+
 class Column:
     def __init__(
         self,
@@ -105,7 +116,7 @@ class Table:
         
         if Table.are_columns(self.content) and len(self.content) > 0:
             for col in self.content:
-                col.width_cm = 1/len(self.content) * _paper_dimensions.width  # pyright: ignore[reportAttributeAccessIssue]
+                col.width_cm = 1/len(self.content) * _page_dimensions.width  # pyright: ignore[reportAttributeAccessIssue]
         
     @staticmethod
     def are_columns(items: list[Row] | list[Column]):

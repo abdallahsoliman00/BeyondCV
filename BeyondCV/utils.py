@@ -1,3 +1,13 @@
+from __future__ import annotations
+
+__all__ = [
+    "PaperDimensions",
+    "merge_dicts_recursively",
+    "get_page_dimensions",
+    "get_paper_dimensions",
+]
+
+
 import itertools as it
 from typing import Any, NamedTuple
 
@@ -27,9 +37,17 @@ def merge_dicts_recursively(*dicts: dict[Any, Any]) -> dict[Any, Any]:
     return result
 
 
-
 def get_paper_dimensions(paper_size: str = "a4") -> PaperDimensions:
     if paper_size == "letter":
         return PaperDimensions(21.6, 27.9)
     else:
         return PaperDimensions(21.0, 29.0)
+
+
+def get_page_dimensions(paper_dims: PaperDimensions, margin_left_cm: float, margin_right_cm: float, margin_top_cm: float, margin_bottom_cm: float):
+    return PaperDimensions(
+        paper_dims.width - margin_left_cm - margin_right_cm,
+        paper_dims.height - margin_top_cm - margin_bottom_cm
+    )
+
+

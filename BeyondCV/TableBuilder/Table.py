@@ -102,7 +102,7 @@ class Column:
         min_height_cm: float = 0.45,
         width_cm: float = 0.0,      # Again, if this value is zero, width is calculated at runtime depending on the number of columns in the table
     ):
-        self.cells: list[Cell]
+        self.cells: list[Cell] = cells
         self.min_height_cm: float = min_height_cm
         self.width_cm: float = width_cm
 

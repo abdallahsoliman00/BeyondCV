@@ -21,7 +21,9 @@ class LLMInvoker(ABC):
                 print(f"Loaded profile from archive: {archive_path}")
                 return
 
+        print(f"Extracting data from '{path_to_pdf}'")
         self.result_json: Any = self.invoke(path_to_pdf)
+        print("Data retrieved.")
         self.result_archive: str | Path = self.archive_json()
 
     def get_archive_location(self) -> str | Path:

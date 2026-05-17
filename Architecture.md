@@ -18,9 +18,6 @@ The LLM module outputs a JSON object that can then be fed into the Table Builder
 
 The PDF is first parsed and ONLY text is extracted. This text is passed to the LLM and an output is received.
 
-The LLM used is the Capgemini Generative Engine (for now).
-(Newer versions of this tool should allow for usage of different LLM providers)
-
 
 ## Table Builder
 The Table Builder module consists of two submodules:

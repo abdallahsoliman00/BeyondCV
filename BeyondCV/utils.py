@@ -41,7 +41,7 @@ def get_paper_dimensions(paper_size: str = "a4") -> PaperDimensions:
     if paper_size == "letter":
         return PaperDimensions(21.6, 27.9)
     else:
-        return PaperDimensions(21.0, 29.0)
+        return PaperDimensions(21.0, 29.7)
 
 
 def get_page_dimensions(paper_dims: PaperDimensions, margin_left_cm: float, margin_right_cm: float, margin_top_cm: float, margin_bottom_cm: float):

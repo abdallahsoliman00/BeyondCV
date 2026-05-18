@@ -20,14 +20,31 @@ def make_template() -> CVTemplate:
             source_key="education",
             item=Table([
                 Row([
-                    Cell(Paragraph("{degree}", ParagraphConfig(bold=True)),
-                         CellConfig(width_cm=3, color=Color("#AB123F"), show_borders=True)),
-                    Cell(Paragraph("{institute}"),
-                         CellConfig(width_cm=5, color=Color("#AB123F"), show_borders=True)),
-                    Cell(Paragraph("{year}"),
-                         CellConfig(width_cm=2, color=Color("#AB123F"), show_borders=True)),
+                    Cell(Paragraph("Degree")),
+                    Cell(Paragraph("Institute")),
+                    Cell(Paragraph("Graduation Year")),
+                ]),
+                Row([
+                    Cell(Paragraph("{degree}", ParagraphConfig(bold=True))),
+                    Cell(Paragraph("{institute}")),
+                    Cell(Paragraph("{year}")),
                 ])
             ])
+        ),
+        RepeatingSection(
+            source_key="experience",
+            item=Table([
+                Row([
+                    Cell(Paragraph("{organisation}", ParagraphConfig(bold=True))),
+                    Cell(Paragraph("{job_title}")),
+                    Cell(Paragraph("{job_period}")),
+                ])
+            ]),
+            header=Row([
+                Cell(Paragraph("Title", ParagraphConfig(font_size_pt=12)), CellConfig(color=Color("#42b0f5"))),
+                Cell(Paragraph("Organisation", ParagraphConfig(font_size_pt=12)), CellConfig(color=Color("#42b0f5"))),
+                Cell(Paragraph("Duration", ParagraphConfig(font_size_pt=12)), CellConfig(color=Color("#42b0f5"))),
+            ]),
         ),
         RepeatingSection(
             source_key="experience",

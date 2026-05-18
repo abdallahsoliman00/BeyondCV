@@ -76,15 +76,22 @@ class Section:
 
 
 class RepeatingSection:
-    def __init__(self, source_key: str, item: Table):
+    def __init__(self, source_key: str, item: Table, header: list[Row] | Row | None = None):
         self.source_key: str = source_key
         self.item: Table = item
+        self.header: list[Row] = [header] if isinstance(header, Row) else header or []
 
     def build(self, data: dict[str, Any]) -> list[Table]:
         items: list[Any] | str = data.get(self.source_key, [])
         if not isinstance(items, list):
             items = [items]
 
+        if not self.header:
+            return self._build_separate(items)
+        else:
+            return self._build_with_header(items, data)
+
+    def _build_separate(self, items: list[Any]) -> list[Table]:
         tables: list[Table] = []
         for item_data in items:
             if not isinstance(item_data, dict):
@@ -98,6 +105,24 @@ class RepeatingSection:
             tables.append(Table(resolved_rows))
 
         return tables
+
+    def _build_with_header(self, items: list[Any], data: dict[str, Any]) -> list[Table]:
+        resolved_rows: list[Row] = []
+        for row in self.header:
+            resolved_rows.append(self._resolve_row(row, data))
+
+        for item_data in items:
+            if not isinstance(item_data, dict):
+                for row in self.item.content:
+                    if isinstance(row, Row):
+                        resolved_rows.append(copy.deepcopy(row))
+                continue
+
+            for row in self.item.content:
+                if isinstance(row, Row):
+                    resolved_rows.append(self._resolve_row(row, item_data))          # pyright: ignore[reportUnknownArgumentType]
+
+        return [Table(resolved_rows)]
 
     def _resolve_row(self, row: Row, data: dict[str, Any]) -> Row:
         resolved_cells: list[Cell] = []

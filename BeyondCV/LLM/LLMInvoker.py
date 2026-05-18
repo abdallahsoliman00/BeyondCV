@@ -3,9 +3,11 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
+from BeyondCV.LLM.utils import safe_parse_json, load_prompt
+
 
 class LLMInvoker(ABC):
-    def __init__(self, path_to_pdf: str | Path) -> None:
+    def __init__(self, path_to_pdf: str | Path, modules: list[str] | None = None) -> None:
         self.pdf_path: str | Path = path_to_pdf
         self.file_name: str = Path(path_to_pdf).stem
 
@@ -21,9 +23,14 @@ class LLMInvoker(ABC):
                 print(f"Loaded profile from archive: {archive_path}")
                 return
 
+
         print(f"Extracting data from '{path_to_pdf}'")
-        self.result_json: Any = self.invoke(path_to_pdf)
+
+        prompt: str = load_prompt(path_to_pdf, modules=modules)
+        self.result_json: Any = safe_parse_json(self.invoke(prompt))
+
         print("Data retrieved.")
+
         self.result_archive: str | Path = self.archive_json()
 
     def get_archive_location(self) -> str | Path:
@@ -34,20 +41,16 @@ class LLMInvoker(ABC):
 
 
     @abstractmethod
-    def invoke(self, path_to_pdf: str | Path) -> Any:
+    def invoke(self, prompt: str) -> str:
         """
         Prompts the LLM with the PDF and returns the json object as a string.
         This function handles everything LLM related; from getting the prompt to prompting thr LLM and receiving the output.
 
         Args:
-            path_to_pdf: The path to the old CV PDF.
+            prompt: The prompt to send to the LLM.
 
         Returns:
-            Must return a JSON Python object (JSON as a dict) with the profile contents.
-
-        Raises:
-            ValueError: If a proper JSON object isn't returned.
-            FileNotFound: If something other than a PDF is passed into the function.
+            Returns the LLM response text. Text sanitisation happens in the __init__ function.
         """
         pass
 

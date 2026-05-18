@@ -124,6 +124,9 @@ class DocxTranslator(DocTranslator):
         halign = alignment.get("horizontal", "left")
         p.alignment = self._HALIGN_MAP.get(halign, WD_ALIGN_PARAGRAPH.LEFT)
 
+        if para_model.config.bullet:
+            p.style = "List Bullet"
+
         run = p.add_run(para_model.text)
         run.font.name = para_model.config.font_name
         run.font.size = Pt(para_model.config.font_size_pt)

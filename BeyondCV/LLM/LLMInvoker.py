@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import Any
 
 from BeyondCV.LLM.utils import safe_parse_json, load_prompt
+from BeyondCV.config import bcv_config as cfg
 
+_always_use_cache: bool = bool(cfg.use_cache)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
 class LLMInvoker(ABC):
     def __init__(self, path_to_pdf: str | Path, modules: list[str] | None = None) -> None:
@@ -13,9 +15,12 @@ class LLMInvoker(ABC):
 
         archive_path = self.get_default_archive_path()
         if archive_path.exists():
-            use_cache = input(
-                f"Archived profile found for '{self.file_name}' at {archive_path}.\nUse cached version? [Y/n]: "
-            ).strip().lower()
+            if _always_use_cache:
+                use_cache = "yes"
+            else:
+                use_cache = input(
+                    f"Archived profile found for '{self.file_name}' at {archive_path}.\nUse cached version? [Y/n]: "
+                ).strip().lower()
             if use_cache in ("", "y", "yes"):
                 with open(archive_path, "r") as f:
                     self.result_json = json.load(f)
@@ -76,3 +81,7 @@ class LLMInvoker(ABC):
         print(f"Archived profile JSON in {json_archive}")
         return json_archive
 
+
+__all__ = [
+    "LLMInvoker"
+]

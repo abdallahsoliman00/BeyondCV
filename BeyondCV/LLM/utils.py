@@ -1,4 +1,3 @@
-import os
 import json
 import pypdf
 from pathlib import Path
@@ -27,8 +26,7 @@ def extract_text_from_pdf(pdf_path: str | Path) -> str:
 def load_prompt(path_to_pdf: str | Path, modules: list[str] | None = None) -> str:
     if not modules: modules = []
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    prompt_path = os.path.join(base_dir, "prompt.txt")
+    prompt_path = Path(__file__).parent / "prompt.txt"
 
     with open(prompt_path, "r") as p:
         prompt_template = p.read()

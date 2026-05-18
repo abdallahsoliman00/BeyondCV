@@ -20,8 +20,12 @@ BASE_TEMPLATE = {
             "description": ["Bullet 1", "Bullet 2", "etc..."]
         }
     ],
-    "tools_prog_languages": ["tool 1", "tool 2", "etc..."],
-    "soft_skills": ["Communication", "Problem Solving", "etc..."],
+    "skill_groups": [
+        {"group_name": "Soft Skills", "items": ["Communication", "Problem Solving", "etc..."]},
+        {"group_name": "Programming Languages", "items": ["Python", "C", "C++"]},
+        {"group_name": "Software Tools", "items": ["CMake", "git", "Docker"]},
+        {"group_name": "Other Group", "items": ["item", "etc..."]},
+    ],
     "languages": [
         {"language": "Arabic", "proficiency": "Native"}
     ],

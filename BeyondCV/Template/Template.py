@@ -13,9 +13,6 @@ from typing import Any
 from BeyondCV.TableBuilder.Table import Cell, Paragraph, Row, Table
 
 
-_PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
-
-
 def _resolve_placeholders(text: str, data: dict[str, Any]) -> str | list[str]:
     """
     Replace {field_name} placeholders in a text string with values from the data dict.
@@ -24,6 +21,9 @@ def _resolve_placeholders(text: str, data: dict[str, Any]) -> str | list[str]:
     the entire function returns a list of strings instead, so the caller can
     create one Paragraph per list item.
 
+    If the template text contains a suffix immediately after the list placeholder
+    (e.g. "{items},"), the suffix is appended to every item except the last.
+
     Args:
         text: A string that may contain {field_name} placeholders.
         data: The data dict to resolve placeholders against.
@@ -31,6 +31,8 @@ def _resolve_placeholders(text: str, data: dict[str, Any]) -> str | list[str]:
     Returns:
         The resolved string, or a list of strings if the field value was a list.
     """
+    _PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
+
     def _replace(match: re.Match[str]) -> str:
         key: str = match.group(1)
         value: str | list[str] | None = data.get(key)
@@ -46,7 +48,13 @@ def _resolve_placeholders(text: str, data: dict[str, Any]) -> str | list[str]:
         for k in keys:
             v: Any | None = data.get(k)
             if isinstance(v, list):
-                return [str(item) for item in v]                     # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+                # Extract any suffix that follows the {key} placeholder in the template.
+                suffix_match = re.search(r"\{" + re.escape(k) + r"\}(.*)$", text)
+                suffix = suffix_match.group(1) if suffix_match else ""
+                items = [str(item) for item in v]                    # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+                if suffix:
+                    return [item + suffix for item in items[:-1]] + [items[-1]]
+                return items
         return resolved.replace("<__LIST_PLACEHOLDER__>", "")
     return resolved
 

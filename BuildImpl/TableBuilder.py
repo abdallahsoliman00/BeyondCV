@@ -58,17 +58,9 @@ def make_template() -> CVTemplate:
                          CellConfig(width_cm=3, color=Color("#AB123F"))),
                 ]),
                 Row([
-                    Cell(Paragraph("{description}")),
+                    Cell(Paragraph("{description}", ParagraphConfig(bullet=True))),
                 ]),
             ])
-        ),
-        Section(
-            Row([
-                Cell(Paragraph("{tools_prog_languages}")),
-            ]),
-            Row([
-                Cell(Paragraph("{soft_skills}")),
-            ]),
         ),
         RepeatingSection(
             source_key="languages",
@@ -84,6 +76,15 @@ def make_template() -> CVTemplate:
                 Cell(Paragraph("{certifications}")),
             ]),
         ),
+        RepeatingSection(
+            source_key="skill_groups",
+            item=Table([
+                Row([
+                    Cell(Paragraph("{group_name}")),
+                    Cell(Paragraph("{items}, "))
+                ])
+            ]),
+        )
     ])
 
 

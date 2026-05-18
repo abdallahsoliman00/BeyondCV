@@ -47,13 +47,15 @@ class ParagraphConfig:
         font_size_pt: float = 10.0,
         bold: bool = False,
         italic: bool = False,
-        underline: bool = False
+        underline: bool = False,
+        bullet: bool = False
     ):
         self.font_name: str = font_name
         self.font_size_pt: float = font_size_pt
         self.bold: bool = bold
         self.italic: bool = italic
         self.underline: bool = underline
+        self.bullet: bool = bullet
 
 
 class Paragraph:
@@ -90,7 +92,7 @@ class Row:
         for cell in self.cells:
             if cell.config.width_cm <= 0.0:
                 cell.config.width_cm = self.row_width_cm * (1/len(self.cells))
-
+ 
     def add_cell(self, cell: Cell):
         self.cells.append(cell)
 

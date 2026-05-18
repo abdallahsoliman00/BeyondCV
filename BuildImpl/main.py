@@ -3,20 +3,19 @@ from BeyondCV.Template import CVTemplate
 from BeyondCV.Translator import DocxTranslator
 from BuildImpl.ProfileMaker import LLMProfileMaker
 from BuildImpl.TableBuilder import make_template
+from pathlib import Path
 
 
 def main():
-    profile = LLMProfileMaker(r"C:\Users\abdal\OneDrive\Documents\Personal\CV\Abdallah_Soliman_CV.pdf")
+    profile = LLMProfileMaker(Path(__file__).parent / "sample_cv.pdf")
     data: dict[str, Any] = profile.get_result_json()
 
     template: CVTemplate = make_template()
     tables = template.build(data)
 
-    print(f"Generated {len(tables)} table(s) for the CV.")
-    for i, table in enumerate(tables):
-        print(f"  Table {i + 1}: {len(table.content)} row(s)")
+    print(f"Generated {len(tables)} table(s).")
 
-    output = DocxTranslator("Abdallah_Soliman_CV.docx", template).build(data)
+    output = DocxTranslator("sample_cv.docx", template).build(data)
     print(f"\nCV saved to: {output}")
 
 

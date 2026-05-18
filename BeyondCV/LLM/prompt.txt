@@ -2,7 +2,7 @@ You are a CV parsing expert. Extract the following information from this CV and 
 Below is a template. Fill in the template with information from the CV attached. Do not make up any information. Only write what is written in the CV. Do not assume any information.
 If information cannot be found, leave it empty as such for example:
   "projects": "",
-If, for example, only one experience exists then only include one experience section "experience": [{}] (<- GOOD) no extras; "experience": [{}, {}] (<- BAD)
+If, for example, only one experience exists then only include one experience section "experience": [{{}}] (<- GOOD) no extras; "experience": [{{}}, {{}}] (<- BAD)
 
 {json_template}
 {extra_fields}

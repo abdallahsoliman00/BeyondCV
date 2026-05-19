@@ -10,7 +10,7 @@ import copy
 import re
 from typing import Any
 
-from BeyondCV.TableBuilder.Table import Cell, Paragraph, Row, Table
+from BeyondCV.TableBuilder.Table import Cell, Paragraph, ParagraphConfig, Row, Table
 
 
 class SectionBase:
@@ -77,32 +77,53 @@ class SectionBase:
         return resolved
 
 
+class SectionTitle:
+    def __init__(self, title: str, text_config: ParagraphConfig | None = None):
+        if text_config == None:
+            text_config = ParagraphConfig(font_size_pt=15, bold=True)
+
+        self.table: Table = Table([
+            Row(Cell([Paragraph(title, config=text_config)]))
+        ])
 
 
 class Section(SectionBase):
-    def __init__(self, *rows: Row):
+    def __init__(
+        self,
+        *rows: Row,
+        title: SectionTitle | None = None
+    ):
         self.rows: list[Row] = list(rows)
+        self.title: SectionTitle | None = title
 
     def build(self, data: dict[str, Any]) -> list[Table]:
         resolved_rows = [self._resolve_row(row, data) for row in self.rows]
-        return [Table(resolved_rows)]
+        return [Table(resolved_rows)] if not self.title else [self.title.table, Table(resolved_rows)]
 
 
 class RepeatingSection(SectionBase):
-    def __init__(self, source_key: str, item: Table, header: list[Row] | Row | None = None):
+    def __init__(
+        self,
+        source_key: str,
+        item: Table,
+        header: list[Row] | Row | None = None,
+        title: SectionTitle | None = None
+    ):
         self.source_key: str = source_key
         self.item: Table = item
         self.header: list[Row] = [header] if isinstance(header, Row) else header or []
+        self.title: SectionTitle | None = title
 
     def build(self, data: dict[str, Any]) -> list[Table]:
         items: list[Any] | str = data.get(self.source_key, [])
         if not isinstance(items, list):
             items = [items]
 
+        result: list[Table] = [] if not self.title else [self.title.table]
         if not self.header:
-            return self._build_separate(items)
+            return [*result, *self._build_separate(items)]
         else:
-            return self._build_with_header(items, data)
+            return [*result, *self._build_with_header(items, data)]
 
     def _build_separate(self, items: list[Any]) -> list[Table]:
         tables: list[Table] = []

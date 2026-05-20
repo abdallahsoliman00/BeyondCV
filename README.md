@@ -20,7 +20,8 @@ This project has two different parts to it:
 2. BuildImpl: an implementation using BeyondCV to create a full CV conversion pipeline.
 
 ## How To Use
-See the [BuildImpl](/BuildImpl/) file for a sample implementation.
+See [USAGE.md](/USAGE.md) for instructions on how to use this library,
+or refer to the [BuildImpl](/BuildImpl/) file for an example implementation.
 
 ## Architecture
 See the [Architecture](/Architecture.md) document for more info.

@@ -23,8 +23,3 @@ jobs:
 
       - name: Publish package
         run: uv publish --token ${{ secrets.PYPI_PUBLISH_KEY }}
-
-      - name: Attach distributions to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*

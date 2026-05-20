@@ -1,6 +1,7 @@
 from colour import Color
 from BeyondCV.Template import CVTemplate, Section, RepeatingSection
 from BeyondCV.TableBuilder.Table import Row, Cell, CellConfig, Paragraph, ParagraphConfig, Table
+from BeyondCV.Template.Template import SectionTitle
 
 
 def make_template() -> CVTemplate:
@@ -45,6 +46,7 @@ def make_template() -> CVTemplate:
                 Cell(Paragraph("Organisation", ParagraphConfig(font_size_pt=12)), CellConfig(color=Color("#42b0f5"))),
                 Cell(Paragraph("Duration", ParagraphConfig(font_size_pt=12)), CellConfig(color=Color("#42b0f5"))),
             ]),
+            title=SectionTitle("Short Experience", ParagraphConfig(font_size_pt=15, bold=True))
         ),
         RepeatingSection(
             source_key="experience",
@@ -60,7 +62,8 @@ def make_template() -> CVTemplate:
                 Row([
                     Cell(Paragraph("{description}", ParagraphConfig(bullet=True))),
                 ]),
-            ])
+            ]),
+            title=SectionTitle("Experience", ParagraphConfig(font_size_pt=15, bold=True))
         ),
         RepeatingSection(
             source_key="languages",
@@ -69,12 +72,15 @@ def make_template() -> CVTemplate:
                     Cell(Paragraph("{language}"), CellConfig(width_cm=5)),
                     Cell(Paragraph("{proficiency}"), CellConfig(width_cm=5)),
                 ])
-            ])
+            ]),
+            title=SectionTitle("Languages", ParagraphConfig(font_size_pt=15, bold=True))
         ),
         Section(
+            Row([Cell(Paragraph("Test"))]),
             Row([
                 Cell(Paragraph("{certifications}")),
             ]),
+            title=SectionTitle("Certifications", ParagraphConfig(font_size_pt=15, bold=True))
         ),
         RepeatingSection(
             source_key="skill_groups",

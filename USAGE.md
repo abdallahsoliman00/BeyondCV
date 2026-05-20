@@ -18,10 +18,9 @@
 
 ## Installation
 
-BeyondCV uses [uv](https://github.com/astral-sh/uv) as its package manager.
-
+BeyondCV is a package on PyPI, so it can easily be installed using the following command:
 ```bash
-uv sync
+pip install BeyondCV
 ```
 
 ---

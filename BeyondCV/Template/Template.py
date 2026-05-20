@@ -14,12 +14,14 @@ from BeyondCV.TableBuilder.Table import Cell, Paragraph, ParagraphConfig, Row, T
 
 
 class SectionBase:
+    _PLACEHOLDER_RE: re.Pattern[str] = re.compile(r"\{(\w+)\}")
+
     def _resolve_row(self, row: Row, data: dict[str, Any]) -> Row:
         resolved_cells: list[Cell] = []
         for cell in row.cells:
             resolved_paragraphs: list[Paragraph] = []
             for p in cell.paragraphs:
-                resolved = SectionBase._resolve_placeholders(p.text, data)
+                resolved = self._resolve_placeholders(p.text, data)
                 if isinstance(resolved, list):
                     resolved_paragraphs.extend(
                         Paragraph(item, copy.deepcopy(p.config)) for item in resolved
@@ -29,9 +31,25 @@ class SectionBase:
             resolved_cells.append(Cell(resolved_paragraphs, copy.deepcopy(cell.config)))
         return Row(resolved_cells, row.min_height_cm, row.row_width_cm)
 
+    def _source_key_empty(self, source_key: str, data: dict[str, Any]) -> bool:
+        item = data.get(source_key)
+        return (item is not None and len(item) == 0) or (item is None)
 
-    @staticmethod
-    def _resolve_placeholders(text: str, data: dict[str, Any]) -> str | list[str]:
+    def _is_row_empty(self, row: Row) -> bool:
+        return all(
+            p.text.strip() == ""
+            for cell in row.cells
+            for p in cell.paragraphs
+        )
+
+    def _row_has_placeholders(self, row: Row) -> bool:
+        return any(
+            self._PLACEHOLDER_RE.search(p.text)
+            for cell in row.cells
+            for p in cell.paragraphs
+        )
+
+    def _resolve_placeholders(self, text: str, data: dict[str, Any]) -> str | list[str]:
         """
         Replace {field_name} placeholders in a text string with values from the data dict.
 
@@ -42,6 +60,8 @@ class SectionBase:
         If the template text contains a suffix immediately after the list placeholder
         (e.g. "{items},"), the suffix is appended to every item except the last.
 
+        If the field value is an empty list, the placeholder is replaced with an empty string.
+
         Args:
             text: A string that may contain {field_name} placeholders.
             data: The data dict to resolve placeholders against.
@@ -49,10 +69,11 @@ class SectionBase:
         Returns:
             The resolved string, or a list of strings if the field value was a list.
         """
-        _PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
 
         def _replace(match: re.Match[str]) -> str:
             key: str = match.group(1)
+            if self._source_key_empty(key, data):
+                return ""
             value: str | list[str] | None = data.get(key)
             if value is None:
                 return match.group(0)
@@ -60,16 +81,16 @@ class SectionBase:
                 return "<__LIST_PLACEHOLDER__>"
             return str(value)
 
-        resolved = _PLACEHOLDER_RE.sub(_replace, text)
+        resolved = self._PLACEHOLDER_RE.sub(_replace, text)
         if "<__LIST_PLACEHOLDER__>" in resolved:
-            keys = [m.group(1) for m in _PLACEHOLDER_RE.finditer(text)]
+            keys = [m.group(1) for m in self._PLACEHOLDER_RE.finditer(text)]
             for k in keys:
-                v: Any | None = data.get(k)
+                v: str | dict[str, Any] | None = data.get(k)
                 if isinstance(v, list):
                     # Extract any suffix that follows the {key} placeholder in the template.
                     suffix_match = re.search(r"\{" + re.escape(k) + r"\}(.*)$", text)
                     suffix = suffix_match.group(1) if suffix_match else ""
-                    items = [str(item) for item in v]                    # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+                    items = [str(item) for item in v]
                     if suffix:
                         return [item + suffix for item in items[:-1]] + [items[-1]]
                     return items
@@ -77,6 +98,7 @@ class SectionBase:
         return resolved
 
 
+# TODO: This SectionTitle should be deleted along with the section below it if it is empty
 class SectionTitle:
     def __init__(self, title: str, text_config: ParagraphConfig | None = None):
         if text_config == None:
@@ -98,7 +120,20 @@ class Section(SectionBase):
 
     def build(self, data: dict[str, Any]) -> list[Table]:
         resolved_rows = [self._resolve_row(row, data) for row in self.rows]
-        return [Table(resolved_rows)] if not self.title else [self.title.table, Table(resolved_rows)]
+
+        placeholder_rows = [
+            (original, resolved)
+            for original, resolved in zip(self.rows, resolved_rows)
+            if self._row_has_placeholders(original)
+        ]
+
+        # Only suppress if there were placeholder rows AND they all resolved to empty
+        if placeholder_rows and all(
+            self._is_row_empty(resolved) for _, resolved in placeholder_rows
+        ):
+            return []
+
+        return [self.title.table, Table(resolved_rows)] if self.title else [Table(resolved_rows)]
 
 
 class RepeatingSection(SectionBase):
@@ -115,15 +150,18 @@ class RepeatingSection(SectionBase):
         self.title: SectionTitle | None = title
 
     def build(self, data: dict[str, Any]) -> list[Table]:
+        if self._source_key_empty(self.source_key, data):
+            return []
+
         items: list[Any] | str = data.get(self.source_key, [])
         if not isinstance(items, list):
             items = [items]
 
-        result: list[Table] = [] if not self.title else [self.title.table]
+        title_table: list[Table] = [] if not self.title else [self.title.table]
         if not self.header:
-            return [*result, *self._build_separate(items)]
+            return [*title_table, *self._build_separate(items)]
         else:
-            return [*result, *self._build_with_header(items, data)]
+            return [*title_table, *self._build_with_header(items, data)]
 
     def _build_separate(self, items: list[Any]) -> list[Table]:
         tables: list[Table] = []

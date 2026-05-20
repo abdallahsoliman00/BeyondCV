@@ -1,9 +1,14 @@
 [project]
 name = "BeyondCV"
 version = "0.1.0"
+authors = [
+    { name="Abdallah Soliman", email="abdallahsoliman03@gmail.com" },
+]
 description = "A CV builder."
 readme = "README.md"
 requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 dependencies = [
     "addict>=2.4.0",
     "colour>=0.1.5",
@@ -14,3 +19,11 @@ dependencies = [
     "python-docx>=1.2.0",
     "pyyaml>=6.0.3",
 ]
+
+[build-system]
+requires = ["uv_build >= 0.11.7, <0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "BeyondCV"
+module-root = ""

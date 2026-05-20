@@ -1,6 +1,7 @@
 .venv/
 .vscode/
 __pycache__/
+dist/
 
 uv.lock
 .env

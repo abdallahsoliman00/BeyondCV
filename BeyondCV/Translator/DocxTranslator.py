@@ -1,4 +1,4 @@
-from typing import Any, override
+from typing import override
 
 from docx import Document
 from docx.document import Document as DocType
@@ -13,7 +13,7 @@ from docx.text.paragraph import Paragraph as DocxParagraph
 from colour import Color
 
 from BeyondCV.Translator.DocTranslator import DocTranslator
-from BeyondCV.TableBuilder.Table import Table as CVTable, Row, Cell, Paragraph, Column
+from BeyondCV.TableBuilder.Components import Table as CVTable, Row, Cell, Paragraph, Column, PageBreak
 from BeyondCV.config import bcv_config as cfg
 
 
@@ -25,8 +25,7 @@ class DocxTranslator(DocTranslator):
     }
 
     @override
-    def build(self, data: dict[str, Any]) -> str:
-        tables = self._template.build(data)
+    def build_document(self):
         doc: DocType = Document()
 
         for section in doc.sections:
@@ -35,13 +34,15 @@ class DocxTranslator(DocTranslator):
             section.left_margin = Cm(float(cfg.margin_left_cm))         # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
             section.right_margin = Cm(float(cfg.margin_right_cm))       # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
-        for i, table_model in enumerate(tables):
-            if i > 0:
-                _ = doc.add_paragraph()
-            self._add_table(doc, table_model)
+        for i, table in enumerate(self.tables):
+            if not isinstance(table, PageBreak):
+                self._add_table(doc, table)
+                if i > 1 and not table.metadata.is_title:
+                    _ = doc.add_paragraph()
+            else:
+                _ = doc.add_page_break()
 
-        doc.save(str(self._doc_location))
-        return str(self._doc_location)
+        doc.save(str(self.doc_location))
 
     # ------------------------------------------------------------------ #
     #  Table rendering

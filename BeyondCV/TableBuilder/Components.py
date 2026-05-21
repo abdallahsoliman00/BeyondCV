@@ -26,16 +26,20 @@ _page_dimensions: PaperDimensions = get_page_dimensions(
 )
 
 
+class TableMetadata:
+    is_title: bool = False
+
+
 class CellConfig:
     def __init__(
         self,
         width_cm: float = 0.0,       # If width is 0.0, the with of the cell is set to 1/total row width
-        color: Color | None = None,
+        color: Color | str | None = None,
         content_alignment: dict[str, str] = _default_alignment,
         show_borders: bool = False
     ):
         self.width_cm: float = width_cm
-        self.color: Color | None = color
+        self.color: Color | None = Color(color) if color else None
         self.content_alignment: dict[str, str] = content_alignment
         self.show_borders: bool = show_borders
 
@@ -45,6 +49,7 @@ class ParagraphConfig:
         self,
         font_name: str = cfg.default_font,  # pyright: ignore[reportUnknownMemberType]
         font_size_pt: float = 10.0,
+        text_color: Color | str | None = None,
         bold: bool = False,
         italic: bool = False,
         underline: bool = False,
@@ -52,6 +57,7 @@ class ParagraphConfig:
     ):
         self.font_name: str = font_name
         self.font_size_pt: float = font_size_pt
+        self.text_color: Color = Color(text_color)
         self.bold: bool = bold
         self.italic: bool = italic
         self.underline: bool = underline
@@ -115,6 +121,7 @@ class Table:
         content: list[Row] | list[Column]
     ):
         self.content: list[Row] | list[Column] = content
+        self.metadata: TableMetadata = TableMetadata()
         
         if Table.are_columns(self.content) and len(self.content) > 0:
             for col in self.content:
@@ -134,3 +141,9 @@ class Table:
                 return False
         return True
 
+class PageBreak:
+    """
+    This class functionally does nothing but indicate
+    to the Translator Module to place a page break here
+    """
+    pass

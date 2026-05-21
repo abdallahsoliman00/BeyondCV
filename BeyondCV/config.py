@@ -21,7 +21,7 @@ def _load_yaml(file_path: str | Path) -> dict[str, str]:
 
 
 default_config_dir = Path(__file__).resolve().parent / "default_config.yaml"
-current_config_dir = "current_config.yaml"
+current_config_dir = "config.yaml"
 
 # ORDER MATTERS! Ensure current_config exists AFTER default_config
 bcv_config: Dict = Dict(merge_dicts_recursively(

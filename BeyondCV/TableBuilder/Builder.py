@@ -10,7 +10,7 @@ import copy
 import re
 from typing import Any
 
-from BeyondCV.TableBuilder.Table import Cell, Paragraph, ParagraphConfig, Row, Table
+from BeyondCV.TableBuilder.Components import Cell, PageBreak, Paragraph, ParagraphConfig, Row, Table
 
 
 class SectionBase:
@@ -107,6 +107,7 @@ class SectionTitle:
         self.table: Table = Table([
             Row(Cell([Paragraph(title, config=text_config)]))
         ])
+        self.table.metadata.is_title = True
 
 
 class Section(SectionBase):
@@ -198,11 +199,15 @@ class RepeatingSection(SectionBase):
 
 
 class CVTemplate:
-    def __init__(self, sections: list[Section | RepeatingSection]):
-        self.sections: list[Section | RepeatingSection] = sections
+    def __init__(self, sections: list[Section | RepeatingSection | PageBreak]):
+        self.sections: list[Section | RepeatingSection | PageBreak] = sections
 
-    def build(self, data: dict[str, Any]) -> list[Table]:
-        tables: list[Table] = []
+    def build(self, data: dict[str, Any]) -> list[Table | PageBreak]:
+        tables: list[Table | PageBreak] = []
         for section in self.sections:
-            tables.extend(section.build(data))
+            if not isinstance(section, PageBreak):
+                tables.extend(section.build(data))
+            else:
+                tables.append(PageBreak())
+
         return tables

@@ -1,4 +1,4 @@
-# BeyondCV — Usage Guide
+# BeyondCV - User Manual
 
 <!--toc:start-->
 - [Installation](#installation)
@@ -18,7 +18,7 @@
 
 ## Installation
 
-BeyondCV is a package on PyPI, so it can easily be installed using the following command:
+BeyondCV is a package on PyPI, so it can easily be installed using pip:
 ```bash
 pip install BeyondCV
 ```
@@ -299,10 +299,10 @@ The output `.docx` is saved to `~/.beyondcv/outfiles/<filename>.docx`.
 
 ## Configuration
 
-Place a `current_config.yaml` file in your working directory to override any default settings. Only the keys you specify are overridden; everything else falls back to the defaults.
+Place a `config.yaml` file in your working directory to override any default settings. Only the keys you specify are overridden; everything else falls back to the defaults.
 
 ```yaml
-# current_config.yaml
+# config.yaml
 paper_size: "letter"     # "A4" (default) or "letter"
 margin_top_cm: 1.5
 margin_bottom_cm: 1.5

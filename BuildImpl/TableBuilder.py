@@ -1,7 +1,8 @@
 from colour import Color
-from BeyondCV.Template import CVTemplate, Section, RepeatingSection
-from BeyondCV.TableBuilder.Table import Row, Cell, CellConfig, Paragraph, ParagraphConfig, Table
-from BeyondCV.Template.Template import SectionTitle
+from BeyondCV.TableBuilder import PageBreak
+from BeyondCV.TableBuilder.Builder import CVTemplate, Section, RepeatingSection
+from BeyondCV.TableBuilder.Components import Row, Cell, CellConfig, Paragraph, ParagraphConfig, Table
+from BeyondCV.TableBuilder.Builder import SectionTitle
 
 
 def make_template() -> CVTemplate:
@@ -32,6 +33,7 @@ def make_template() -> CVTemplate:
                 ])
             ])
         ),
+        PageBreak(),
         RepeatingSection(
             source_key="experience",
             item=Table([

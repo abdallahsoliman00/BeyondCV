@@ -1,4 +1,11 @@
-from BeyondCV.TableBuilder.Table import *
+from BeyondCV.TableBuilder.Components import (
+    Table, Row, Cell, Paragraph, Column,
+    CellConfig, ParagraphConfig, PageBreak
+)
+from BeyondCV.TableBuilder.Builder import (
+    CVTemplate, Section,
+    RepeatingSection
+)
 
 __all__ = [
     "CellConfig",
@@ -6,5 +13,10 @@ __all__ = [
     "Paragraph",
     "Cell",
     "Row",
-    "Table"
+    "Column",
+    "Table",
+    "PageBreak",
+    "CVTemplate",
+    "Section",
+    "RepeatingSection"
 ]

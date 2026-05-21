@@ -1,5 +1,5 @@
 from typing import Any
-from BeyondCV.Template import CVTemplate
+from BeyondCV.TableBuilder import CVTemplate
 from BeyondCV.Translator import DocxTranslator
 from BuildImpl.ProfileMaker import LLMProfileMaker
 from BuildImpl.TableBuilder import make_template
@@ -15,7 +15,7 @@ def main():
 
     print(f"Generated {len(tables)} table(s).")
 
-    output = DocxTranslator("sample_cv.docx", template).build(data)
+    output = DocxTranslator("sample_cv.docx", template, data).build()
     print(f"\nCV saved to: {output}")
 
 

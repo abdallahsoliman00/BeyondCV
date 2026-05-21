@@ -4,6 +4,7 @@ __all__ = [
     "CVTemplate",
     "Section",
     "RepeatingSection",
+    "SectionTitle"
 ]
 
 import copy

@@ -98,7 +98,6 @@ class SectionBase:
         return resolved
 
 
-# TODO: This SectionTitle should be deleted along with the section below it if it is empty
 class SectionTitle:
     def __init__(self, title: str, text_config: ParagraphConfig | None = None):
         if text_config == None:

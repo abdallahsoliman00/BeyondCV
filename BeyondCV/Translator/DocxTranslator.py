@@ -6,7 +6,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement  # pyright: ignore[reportUnknownVariableType]
 from docx.oxml.ns import qn
 from docx.oxml.table import CT_TcPr
-from docx.shared import Cm, Pt
+from docx.shared import Cm, Pt, RGBColor
 from docx.table import _Cell as DocxCell, Table as DocxTable  # pyright: ignore[reportPrivateUsage]
 from docx.text.paragraph import Paragraph as DocxParagraph
 
@@ -97,6 +97,11 @@ class DocxTranslator(DocTranslator):
     #  Cell / Paragraph formatting
     # ------------------------------------------------------------------ #
 
+    @staticmethod
+    def to_docx_color_rgb(color: Color):
+        return RGBColor(*[int(255 * c) for c in color.get_rgb()])
+
+
     def _fill_cell(self, cell: DocxCell, cell_model: Cell):
         config = cell_model.config
 
@@ -131,6 +136,7 @@ class DocxTranslator(DocTranslator):
         run = p.add_run(para_model.text)
         run.font.name = para_model.config.font_name
         run.font.size = Pt(para_model.config.font_size_pt)
+        run.font.color.rgb = self.to_docx_color_rgb(para_model.config.text_color)
         run.bold = para_model.config.bold
         run.italic = para_model.config.italic
         run.underline = para_model.config.underline

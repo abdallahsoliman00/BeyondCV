@@ -8,14 +8,11 @@ from BeyondCV.TableBuilder.Builder import SectionTitle
 def make_template() -> CVTemplate:
     return CVTemplate([
         Section(
-            Row([
-                Cell(Paragraph("{name}", ParagraphConfig(bold=True, font_size_pt=24)),
-                     CellConfig(width_cm=8)),
-                Cell(Paragraph("{title}", ParagraphConfig(font_size_pt=14, italic=True)),
-                     CellConfig(width_cm=4)),
+            Row([Cell(Paragraph("{name}", ParagraphConfig(bold=True, font_size_pt=24))),
             ]),
-            Row([
-                Cell(Paragraph("{profile_summary}", ParagraphConfig(italic=True))),
+            Row([Cell(Paragraph("{title}", ParagraphConfig(font_size_pt=14, italic=True, text_color="blue"))),
+            ]),
+            Row([Cell(Paragraph("{profile_summary}", ParagraphConfig(italic=True))),
             ]),
         ),
         RepeatingSection(

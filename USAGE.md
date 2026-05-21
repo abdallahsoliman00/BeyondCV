@@ -3,12 +3,12 @@
 <!--toc:start-->
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Step 1 — Implement an LLM Invoker](#step-1--implement-an-llm-invoker)
-- [Step 2 — Define a CV Template](#step-2--define-a-cv-template)
+- [Step 1 - Implement an LLM Invoker](#step-1--implement-an-llm-invoker)
+- [Step 2 - Define a CV Template](#step-2--define-a-cv-template)
   - [Table Layout Primitives](#table-layout-primitives)
   - [Section vs RepeatingSection](#section-vs-repeatingsection)
   - [Placeholders](#placeholders)
-- [Step 3 — Run the Pipeline](#step-3--run-the-pipeline)
+- [Step 3 - Run the Pipeline](#step-3--run-the-pipeline)
 - [Configuration](#configuration)
 - [Extra Extraction Modules](#extra-extraction-modules)
 - [Extending the Library](#extending-the-library)
@@ -31,7 +31,7 @@ The full pipeline in four lines:
 
 ```python
 from pathlib import Path
-from BeyondCV.Template import CVTemplate
+from BeyondCV.TableBuilder import CVTemplate
 from BeyondCV.Translator import DocxTranslator
 from my_impl.ProfileMaker import MyLLMInvoker   # your LLMInvoker subclass
 from my_impl.template import make_template       # your CVTemplate definition
@@ -40,13 +40,13 @@ profile = MyLLMInvoker(Path("path/to/cv.pdf"))
 data    = profile.get_result_json()
 
 template = make_template()
-output   = DocxTranslator("output.docx", template).build(data)
+output   = DocxTranslator("output.docx", template, data).build()
 print(f"Saved to: {output}")
 ```
 
 ---
 
-## Step 1 — Implement an LLM Invoker
+## Step 1: Implement an LLM Invoker
 
 `LLMInvoker` is an abstract base class. Subclass it and implement `invoke()`, which receives the full prompt string and must return the LLM's raw text response.
 
@@ -101,11 +101,11 @@ class MyLLMInvoker(LLMInvoker):
 
 ---
 
-## Step 2 — Define a CV Template
+## Step 2: Define a CV Template
 
 ### Table Layout Primitives
 
-The layout system is a hierarchy of four classes, all importable from `BeyondCV.TableBuilder`:
+The layout system is a hierarchy of classes, all importable from `BeyondCV.TableBuilder`:
 
 | Class | Description |
 |---|---|
@@ -113,6 +113,9 @@ The layout system is a hierarchy of four classes, all importable from `BeyondCV.
 | `Cell(content, config?)` | Holds one or more `Paragraph` objects. |
 | `Row(cells, min_height_cm?, row_width_cm?)` | A horizontal list of `Cell` objects. |
 | `Table(rows)` | A list of `Row` objects forming one visual block. |
+| `PageBreak()` | A marker that instructs the translator to insert a page break. |
+| `SectionTitle(title, text_config?)` | A styled title row, usable as a heading for `Section` or `RepeatingSection`. |
+<!-- | `Column(cells, min_height_cm?, width_cm?)` | A vertical list of `Cell` objects (for column-based table layouts). | -->
 
 **`ParagraphConfig`** controls text styling:
 
@@ -122,6 +125,7 @@ from BeyondCV.TableBuilder import ParagraphConfig
 ParagraphConfig(
     font_name="Aptos",   # defaults to config value
     font_size_pt=10.0,
+    text_color="blue",   # accepts any Colour-compatible value (name, hex, RGB)
     bold=False,
     italic=False,
     underline=False,
@@ -146,7 +150,7 @@ CellConfig(
 )
 ```
 
-**Example — a simple two-column row:**
+**Example: a simple two-column row:**
 
 ```python
 from BeyondCV.TableBuilder import Row, Cell, Paragraph, ParagraphConfig, CellConfig
@@ -168,31 +172,33 @@ row = Row([
 
 ### Section vs RepeatingSection
 
-Both are importable from `BeyondCV.Template`:
+All are importable from `BeyondCV.TableBuilder`:
 
 ```python
-from BeyondCV.Template import CVTemplate, Section, RepeatingSection
+from BeyondCV.TableBuilder import CVTemplate, Section, RepeatingSection, PageBreak, SectionTitle
 ```
 
-**`Section(*rows)`** — a fixed block rendered once.
+**`Section(*rows, title?)`** - a fixed block rendered once. Accepts an optional `SectionTitle` as a heading.
 
 ```python
 Section(
     Row([Cell(Paragraph("{name}", ParagraphConfig(bold=True, font_size_pt=24)))]),
     Row([Cell(Paragraph("{profile_summary}", ParagraphConfig(italic=True)))]),
+    title=SectionTitle("Personal Info"),
 )
 ```
 
-**`RepeatingSection(source_key, item, header?)`** — iterates over a list field in the data and renders one `Table` per item.
+**`RepeatingSection(source_key, item, header?, title?)`** - iterates over a list field in the data and renders one `Table` per item.
 
 | Parameter | Type | Description |
 |---|---|---|
 | `source_key` | `str` | The key in the extracted JSON whose value is a list (e.g. `"experience"`). |
 | `item` | `Table` | The row template to repeat for each list entry. |
 | `header` | `Row` or `list[Row]` or `None` | Optional header row(s) prepended once before all repeated items. When provided, all items are merged into a single table. |
+| `title` | `SectionTitle` or `None` | Optional title row prepended before the header and repeated items. |
 
 ```python
-# Repeating section without a header — one table per experience entry
+# Repeating section with a title, one table per experience entry, preceded by a heading
 RepeatingSection(
     source_key="experience",
     item=Table([
@@ -205,9 +211,10 @@ RepeatingSection(
             Cell(Paragraph("{description}", ParagraphConfig(bullet=True))),
         ]),
     ]),
+    title=SectionTitle("Experience"),
 )
 
-# Repeating section with a header row — all items merged into one table
+# Repeating section with a header row, all items merged into one table
 RepeatingSection(
     source_key="experience",
     item=Table([
@@ -222,15 +229,17 @@ RepeatingSection(
         Cell(Paragraph("Job Title",    ParagraphConfig(bold=True)), CellConfig(color=Color("#42b0f5"))),
         Cell(Paragraph("Period",       ParagraphConfig(bold=True)), CellConfig(color=Color("#42b0f5"))),
     ]),
+    title=SectionTitle("Work History"),
 )
 ```
 
-**`CVTemplate(sections)`** — composes all sections into the final document.
+**`CVTemplate(sections)`** composes all sections into the final document. Accepts `Section`, `RepeatingSection`, and `PageBreak` entries.
 
 ```python
 template = CVTemplate([
     Section(...),
     RepeatingSection(...),
+    PageBreak(),           # forces a page break before the next section
     RepeatingSection(...),
 ])
 ```
@@ -252,7 +261,7 @@ Placeholder tokens (`{field_name}`) are resolved against the JSON extracted by t
 | `{organisation}` | string | (inside `experience` list) Employer name |
 | `{job_title}` | string | (inside `experience` list) Role title |
 | `{job_period}` | string | (inside `experience` list) Employment period |
-| `{description}` | list[string] | (inside `experience` list) Bullet points — auto-expanded into multiple `Paragraph` objects |
+| `{description}` | list[string] | (inside `experience` list) Bullet points, auto-expanded into multiple `Paragraph` objects |
 | `{project_name}` | string | (inside `projects` list) Project name |
 | `{group_name}` | string | (inside `skill_groups` list) Skill group label |
 | `{items}` | list[string] | (inside `skill_groups` list) Skill items |
@@ -269,11 +278,11 @@ Cell(Paragraph("{items}, "))
 
 ---
 
-## Step 3 — Run the Pipeline
+## Step 3: Run the Pipeline
 
 ```python
 from pathlib import Path
-from BeyondCV.Template import CVTemplate
+from BeyondCV.TableBuilder import CVTemplate
 from BeyondCV.Translator import DocxTranslator
 from my_impl.invoker import MyLLMInvoker
 
@@ -286,7 +295,7 @@ def main():
     template = CVTemplate([...])   # your Section / RepeatingSection definitions
 
     # 3. Render to .docx
-    output_path = DocxTranslator("my_cv.docx", template).build(data)
+    output_path = DocxTranslator("my_cv.docx", template, data).build()
     print(f"Saved to: {output_path}")
 
 if __name__ == "__main__":
@@ -358,13 +367,14 @@ Subclass `LLMInvoker` and override `invoke(prompt) -> str`. See [Step 1](#step-1
 
 ### Custom output format
 
-Subclass `DocTranslator` and override `build(data) -> str | Path`:
+Subclass `DocTranslator` and override `build_document()`. The data is already passed to the constructor and tables are pre-built as `self.tables`:
 
 ```python
+from typing import Any
 from BeyondCV.Translator.DocTranslator import DocTranslator
 
 class MyTeXTranslator(DocTranslator):
-    def build(self, data):
+    def build_document(self):
         # render self.tables to a .tex file
         ...
 ```

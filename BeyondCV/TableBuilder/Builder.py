@@ -59,7 +59,7 @@ class SectionBase:
         create one Paragraph per list item.
 
         If the template text contains a suffix immediately after the list placeholder
-        (e.g. "{items},"), the suffix is appended to every item except the last.
+        (e.g. "{items}, "), the suffix is appended to every item except the last.
 
         If the field value is an empty list, the placeholder is replaced with an empty string.
 
@@ -93,7 +93,7 @@ class SectionBase:
                     suffix = suffix_match.group(1) if suffix_match else ""
                     items = [str(item) for item in v]
                     if suffix:
-                        return [item + suffix for item in items[:-1]] + [items[-1]]
+                        return suffix.join(items)
                     return items
             return resolved.replace("<__LIST_PLACEHOLDER__>", "")
         return resolved

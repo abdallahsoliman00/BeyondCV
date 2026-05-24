@@ -47,6 +47,12 @@ def make_template() -> CVTemplate:
             ]),
             title=SectionTitle("Short Experience", ParagraphConfig(font_size_pt=15, bold=True))
         ),
+        Section(
+            Row([
+                Cell(Paragraph("{certifications}")),
+            ]),
+            title=SectionTitle("Certifications", ParagraphConfig(font_size_pt=15, bold=True))
+        ),
         RepeatingSection(
             source_key="experience",
             item=Table([
@@ -73,13 +79,6 @@ def make_template() -> CVTemplate:
                 ])
             ]),
             title=SectionTitle("Languages", ParagraphConfig(font_size_pt=15, bold=True))
-        ),
-        Section(
-            Row([Cell(Paragraph("Test"))]),
-            Row([
-                Cell(Paragraph("{certifications}")),
-            ]),
-            title=SectionTitle("Certifications", ParagraphConfig(font_size_pt=15, bold=True))
         ),
         RepeatingSection(
             source_key="skill_groups",

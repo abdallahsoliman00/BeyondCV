@@ -63,6 +63,19 @@ class DocxTranslator(DocTranslator):
         table = doc.add_table(rows=len(rows), cols=max_cols)
         self._remove_table_borders(table)
 
+        # Infer column widths from the first full row (one with max_cols cells)
+        col_widths = [0.0] * max_cols
+        for row_model in rows:
+            if len(row_model.cells) == max_cols:
+                for ci, cell in enumerate(row_model.cells):
+                    col_widths[ci] = cell.config.width_cm
+                break
+
+        # Set tblGrid column widths so the grid matches the intended column layout
+        for ci, w in enumerate(col_widths):
+            if w > 0.0:
+                table.columns[ci].width = Cm(w)
+
         for row_idx, row_model in enumerate(rows):
             table.rows[row_idx].height = Cm(row_model.min_height_cm)
 
@@ -71,9 +84,12 @@ class DocxTranslator(DocTranslator):
                 self._fill_cell(cell, cell_model)
 
             if len(row_model.cells) < max_cols:
+                for col_idx in range(len(row_model.cells) - 1):
+                    table.cell(row_idx, col_idx).width = Cm(col_widths[col_idx])
                 start = table.cell(row_idx, len(row_model.cells) - 1)
                 end = table.cell(row_idx, max_cols - 1)
-                _ = start.merge(end)
+                merged = start.merge(end)
+                merged.width = Cm(sum(col_widths[len(row_model.cells) - 1:]))
 
     def _add_column_table(self, doc: DocType, table_model: CVTable):
         columns = [c for c in table_model.content if isinstance(c, Column)]
@@ -219,3 +235,4 @@ class DocxTranslator(DocTranslator):
             border.set(qn("w:color"), "auto")
             borders.append(border)
         tblPr.append(borders)
+

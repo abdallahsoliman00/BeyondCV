@@ -34,10 +34,10 @@ class DocxTranslator(DocTranslator):
             section.left_margin = Cm(float(cfg.margin_left_cm))         # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
             section.right_margin = Cm(float(cfg.margin_right_cm))       # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
-        for i, table in enumerate(self.tables):
+        for table in self.tables:
             if not isinstance(table, PageBreak):
                 self._add_table(doc, table)
-                if i > 1 and not table.metadata.is_title:
+                if not table.metadata.is_title:
                     _ = doc.add_paragraph()
             else:
                 _ = doc.add_page_break()

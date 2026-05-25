@@ -4,7 +4,7 @@ version = "0.1.4"
 authors = [
     { name="Abdallah Soliman", email="abdallahsoliman03@gmail.com" },
 ]
-description = "A CV builder."
+description = "A CV building library/framework."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"

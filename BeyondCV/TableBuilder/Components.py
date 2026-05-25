@@ -16,7 +16,7 @@ _default_alignment: dict[str, str] = {
     "horizontal": "left",     # Can be "left", "center", "right"
 }
 
-# Paper imensions are that of the whole paper
+# Paper dimensions are that of the whole paper
 _paper_dimensions: PaperDimensions = get_paper_dimensions(str(cfg.paper_size).lower())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 # Page dimensions are that of the space within the margins
 _page_dimensions: PaperDimensions = get_page_dimensions(
@@ -140,6 +140,7 @@ class Table:
             if not isinstance(i, Row):
                 return False
         return True
+
 
 class PageBreak:
     """

@@ -198,6 +198,16 @@ class RepeatingSection(SectionBase):
         return [Table(resolved_rows)]
 
 
+class Header:
+    def __init__(self) -> None:
+        pass
+
+
+class Footer:
+    def __init__(self) -> None:
+        pass
+
+
 class CVTemplate:
     def __init__(self, sections: list[Section | RepeatingSection | PageBreak]):
         self.sections: list[Section | RepeatingSection | PageBreak] = sections

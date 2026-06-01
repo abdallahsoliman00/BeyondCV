@@ -28,12 +28,12 @@ class PaperDimensions(NamedTuple):
 class ImgConfig:
     def __init__(
         self,
-        width: float = 0.0,     # 0.0 here means default width
-        height: float = 0.0,    # 0.0 here means default height
+        width_cm: float = 0.0,     # 0.0 here means default width
+        height_cm: float = 0.0,    # 0.0 here means default height
         alignment: dict[str, str] = default_alignment
     ):
-        self.width: float = width
-        self.height: float = height
+        self.width: float = width_cm
+        self.height: float = height_cm
         self.alignment: dict[str, str] = alignment
 
 

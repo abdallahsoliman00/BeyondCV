@@ -36,6 +36,7 @@ class DocxTranslator(DocTranslator):
             section.bottom_margin = Cm(float(cfg.margin_bottom_cm))     # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
             section.left_margin = Cm(float(cfg.margin_left_cm))         # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
             section.right_margin = Cm(float(cfg.margin_right_cm))       # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+            section.header_distance = Cm(float(cfg.header_from_top_cm)) # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
         self._apply_headers_footers(doc)
 

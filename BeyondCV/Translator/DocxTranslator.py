@@ -13,7 +13,10 @@ from docx.text.paragraph import Paragraph as DocxParagraph
 from colour import Color
 
 from BeyondCV.Translator.DocTranslator import DocTranslator
-from BeyondCV.TableBuilder.Components import Table as CVTable, Row, Cell, Paragraph, Column, PageBreak
+from BeyondCV.TableBuilder.Components import (
+    Table as CVTable, Row, Cell, Paragraph, Column, PageBreak,
+    HeaderFooterBase,
+)
 from BeyondCV.config import bcv_config as cfg
 
 
@@ -34,6 +37,8 @@ class DocxTranslator(DocTranslator):
             section.left_margin = Cm(float(cfg.margin_left_cm))         # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
             section.right_margin = Cm(float(cfg.margin_right_cm))       # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
+        self._apply_headers_footers(doc)
+
         for table in self.tables:
             if not isinstance(table, PageBreak):
                 self._add_table(doc, table)
@@ -43,6 +48,94 @@ class DocxTranslator(DocTranslator):
                 _ = doc.add_page_break()
 
         doc.save(str(self.doc_location))
+
+    # ------------------------------------------------------------------ #
+    #  Header / Footer rendering
+    # ------------------------------------------------------------------ #
+
+    def _apply_headers_footers(self, doc: DocType):
+        has_different_first = (
+            self.first_page_header is not None or self.first_page_footer is not None
+        )
+
+        for section in doc.sections:
+            if has_different_first:
+                section.different_first_page_header_footer = True
+
+            if self.header is not None:
+                self._apply_hf_content(section.header, self.header)       # pyright: ignore[reportArgumentType]
+            if self.footer is not None:
+                self._apply_hf_content(section.footer, self.footer)       # pyright: ignore[reportArgumentType]
+
+            if has_different_first:
+                if self.first_page_header is not None:
+                    self._apply_hf_content(section.first_page_header, self.first_page_header)  # pyright: ignore[reportArgumentType]
+                if self.first_page_footer is not None:
+                    self._apply_hf_content(section.first_page_footer, self.first_page_footer)  # pyright: ignore[reportArgumentType]
+
+    def _apply_hf_content(self, hf_section: DocxParagraph, hf_model: HeaderFooterBase):
+        # Each header/footer section already has one paragraph; reuse it.
+        p: DocxParagraph = hf_section.paragraphs[0]  # pyright: ignore[reportAttributeAccessIssue]
+
+        if hf_model.image_path is not None:
+            self._render_hf_image(p, hf_model)
+        elif hf_model.page_numbers is not None:
+            self._render_hf_page_numbers(p, hf_model)
+        elif hf_model.text is not None:
+            self._render_hf_paragraph(p, hf_model)
+
+    def _render_hf_paragraph(self, p: DocxParagraph, hf_model: HeaderFooterBase):
+        assert hf_model.text is not None
+        para = hf_model.text
+        self._format_paragraph(p, para, {"horizontal": "left", "vertical": "center"})
+
+    def _render_hf_page_numbers(self, p: DocxParagraph, hf_model: HeaderFooterBase):
+        assert hf_model.page_numbers is not None
+        config = hf_model.page_numbers
+
+        halign = self._HALIGN_MAP.get("center", WD_ALIGN_PARAGRAPH.CENTER)
+        p.alignment = halign
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
+
+        run = p.add_run()
+        run.font.name = config.font_name
+        run.font.size = Pt(config.font_size_pt)
+        run.font.color.rgb = self.to_docx_color_rgb(config.text_color)
+        run.bold = config.bold
+        run.italic = config.italic
+        run.underline = config.underline
+
+        # Insert PAGE field via XML: <w:fldChar w:fldCharType="begin"/>
+        # <w:instrText> PAGE </w:instrText>  <w:fldChar w:fldCharType="end"/>
+        r_xml = run._r  # pyright: ignore[reportPrivateUsage]
+
+        fld_begin = OxmlElement("w:fldChar")
+        fld_begin.set(qn("w:fldCharType"), "begin")
+        r_xml.append(fld_begin)
+
+        instr = OxmlElement("w:instrText")
+        instr.set(qn("xml:space"), "preserve")
+        instr.text = " PAGE "
+        r_xml.append(instr)
+
+        fld_end = OxmlElement("w:fldChar")
+        fld_end.set(qn("w:fldCharType"), "end")
+        r_xml.append(fld_end)
+
+    def _render_hf_image(self, p: DocxParagraph, hf_model: HeaderFooterBase):
+        assert hf_model.image_path is not None
+        img_cfg = hf_model.image_config
+
+        halign = img_cfg.alignment.get("horizontal", "left")
+        p.alignment = self._HALIGN_MAP.get(halign, WD_ALIGN_PARAGRAPH.LEFT)
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
+
+        run = p.add_run()
+        width = Cm(img_cfg.width) if img_cfg.width > 0.0 else None
+        height = Cm(img_cfg.height) if img_cfg.height > 0.0 else None
+        _ = run.add_picture(str(hf_model.image_path), width=width, height=height)
 
     # ------------------------------------------------------------------ #
     #  Table rendering

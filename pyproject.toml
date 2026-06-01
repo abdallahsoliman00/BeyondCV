@@ -15,6 +15,7 @@ dependencies = [
     "debugpy>=1.8.20",
     "dotenv>=0.9.9",
     "openai>=2.36.0",
+    "pillow>=12.2.0",
     "pypdf>=6.11.0",
     "python-docx>=1.2.0",
     "pyyaml>=6.0.3",

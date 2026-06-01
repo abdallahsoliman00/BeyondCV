@@ -1,6 +1,7 @@
 from BeyondCV.TableBuilder.Components import (
     Table, Row, Cell, Paragraph, Column,
     CellConfig, ParagraphConfig, PageBreak,
+    HeaderFooterBase
 )
 from BeyondCV.TableBuilder.Builder import (
     CVTemplate, Section,
@@ -16,6 +17,7 @@ __all__ = [
     "Column",
     "Table",
     "PageBreak",
+    "HeaderFooterBase",
     "CVTemplate",
     "Section",
     "RepeatingSection",

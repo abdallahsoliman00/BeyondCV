@@ -2,7 +2,7 @@ from typing import Any
 from BeyondCV.TableBuilder import CVTemplate
 from BeyondCV.Translator import DocxTranslator
 from BuildImpl.ProfileMaker import LLMProfileMaker
-from BuildImpl.TableBuilder import make_template
+from BuildImpl.TemplateMaker import make_template
 from pathlib import Path
 
 

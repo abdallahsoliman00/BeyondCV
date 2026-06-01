@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 from pathlib import Path
-from BeyondCV.TableBuilder import CVTemplate, PageBreak, Table
+from BeyondCV.TableBuilder import CVTemplate, PageBreak, Table, HeaderFooterBase
 
 
 class DocTranslator(ABC):
@@ -20,6 +20,10 @@ class DocTranslator(ABC):
         doc_location.parent.mkdir(parents=True, exist_ok=True)
         self.doc_location: Path = doc_location
         self.tables: list[Table | PageBreak] = template.build(data)
+        self.header: HeaderFooterBase | None = template.header
+        self.footer: HeaderFooterBase | None = template.footer
+        self.first_page_header: HeaderFooterBase | None = template.first_page_header
+        self.first_page_footer: HeaderFooterBase | None = template.first_page_footer
 
 
     @abstractmethod

@@ -4,17 +4,21 @@ __all__ = [
     "Paragraph",
     "Cell",
     "Row",
-    "Table"
+    "Table",
+    "HeaderFooterBase",
 ]
 
 from colour import Color
-from BeyondCV.config import bcv_config as cfg
-from BeyondCV.utils import PaperDimensions, get_paper_dimensions, get_page_dimensions
+from pathlib import Path
 
-_default_alignment: dict[str, str] = {
-    "vertical": "center",       # Can be "top", "center", "bottom"
-    "horizontal": "left",     # Can be "left", "center", "right"
-}
+from BeyondCV.config import bcv_config as cfg
+from BeyondCV.utils import (
+    get_paper_dimensions, get_page_dimensions,
+    PaperDimensions,
+    ImgConfig, default_alignment
+)
+from PIL import Image
+
 
 # Paper dimensions are that of the whole paper
 _paper_dimensions: PaperDimensions = get_paper_dimensions(str(cfg.paper_size).lower())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
@@ -35,7 +39,7 @@ class CellConfig:
         self,
         width_cm: float = 0.0,       # If width is 0.0, the with of the cell is set to 1/total row width
         color: Color | str | None = None,
-        content_alignment: dict[str, str] = _default_alignment,
+        content_alignment: dict[str, str] = default_alignment,
         show_borders: bool = False
     ):
         self.width_cm: float = width_cm
@@ -148,3 +152,38 @@ class PageBreak:
     to the Translator Module to place a page break here
     """
     pass
+
+
+class HeaderFooterBase:
+    def __init__(
+        self,
+        text: Paragraph | None = None,
+        page_numbers: ParagraphConfig | None = None,        # If ParagraphConfig exists, page numbers are set to true and the config provided is how the text will be formatted
+        image_path: Path | str | None = None,
+        image_config: ImgConfig | None = None
+    ):
+        self.text: Paragraph | None = text
+        self.page_numbers: ParagraphConfig | None = page_numbers
+        self.image_path: Path | str | None = image_path
+        self.image_config: ImgConfig = image_config if image_config else ImgConfig()
+
+        if self.image_path:
+            with Image.open(self.image_path) as img:
+                width0, height0 = img.size
+                # If both sides are unset, set the image size to be the default size
+                if not self.image_config.width and not self.image_config.height:
+                    self.image_config.width = width0
+                    self.image_config.width = height0
+                # If one of either side is set, the image is scaled to maintain aspect ratio
+                elif not self.image_config.width and self.image_config.height:
+                    self.image_config.width = (width0 / height0) * self.image_config.height
+                elif not self.image_config.height and self.image_config.width:
+                    self.image_config.height = (height0 / width0) * self.image_config.width
+
+
+        # Let the existence of an image override anything else
+        if self.text and image_path:
+            self.text = None
+        if self.page_numbers and image_path:
+            self.page_numbers = None
+

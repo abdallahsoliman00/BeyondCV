@@ -4,14 +4,18 @@ __all__ = [
     "CVTemplate",
     "Section",
     "RepeatingSection",
-    "SectionTitle"
+    "SectionTitle",
 ]
 
 import copy
 import re
 from typing import Any
 
-from BeyondCV.TableBuilder.Components import Cell, PageBreak, Paragraph, ParagraphConfig, Row, Table
+from BeyondCV.TableBuilder.Components import(
+    Cell, PageBreak, Paragraph,
+    ParagraphConfig, Row, Table,
+    HeaderFooterBase
+)
 
 
 class SectionBase:
@@ -198,19 +202,20 @@ class RepeatingSection(SectionBase):
         return [Table(resolved_rows)]
 
 
-class Header:
-    def __init__(self) -> None:
-        pass
-
-
-class Footer:
-    def __init__(self) -> None:
-        pass
-
-
 class CVTemplate:
-    def __init__(self, sections: list[Section | RepeatingSection | PageBreak]):
+    def __init__(
+        self,
+        sections: list[Section | RepeatingSection | PageBreak],
+        header: HeaderFooterBase | None = None,
+        footer: HeaderFooterBase | None = None,
+        first_page_header: HeaderFooterBase | None = None,
+        first_page_footer: HeaderFooterBase | None = None,
+    ):
         self.sections: list[Section | RepeatingSection | PageBreak] = sections
+        self.header: HeaderFooterBase | None = header
+        self.footer: HeaderFooterBase | None = footer
+        self.first_page_header: HeaderFooterBase | None = first_page_header
+        self.first_page_footer: HeaderFooterBase | None = first_page_footer
 
     def build(self, data: dict[str, Any]) -> list[Table | PageBreak]:
         tables: list[Table | PageBreak] = []

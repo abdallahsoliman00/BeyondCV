@@ -5,15 +5,36 @@ __all__ = [
     "merge_dicts_recursively",
     "get_page_dimensions",
     "get_paper_dimensions",
+    "default_alignment",
+    "ImgConfig",
 ]
 
 
 import itertools as it
 from typing import Any, NamedTuple
 
+
+default_alignment: dict[str, str] = {
+    "vertical": "center",       # Can be "top", "center", "bottom"
+    "horizontal": "left",     # Can be "left", "center", "right"
+}
+
+
 class PaperDimensions(NamedTuple):
     width: float
     height: float
+
+
+class ImgConfig:
+    def __init__(
+        self,
+        width: float = 0.0,     # 0.0 here means default width
+        height: float = 0.0,    # 0.0 here means default height
+        alignment: dict[str, str] = default_alignment
+    ):
+        self.width: float = width
+        self.height: float = height
+        self.alignment: dict[str, str] = alignment
 
 
 # Taken from https://github.com/3b1b/manim/blob/master/manimlib/utils/dict_ops.py

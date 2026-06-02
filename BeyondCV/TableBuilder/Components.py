@@ -20,14 +20,14 @@ from BeyondCV.utils import (
 from PIL import Image
 
 
-# Paper dimensions are that of the whole paper
-_paper_dimensions: PaperDimensions = get_paper_dimensions(str(cfg.paper_size).lower())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-# Page dimensions are that of the space within the margins
-_page_dimensions: PaperDimensions = get_page_dimensions(
-    _paper_dimensions,
-    float(cfg.margin_left_cm), float(cfg.margin_right_cm),  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-    float(cfg.margin_top_cm), float(cfg.margin_bottom_cm)   # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-)
+def _get_page_dimensions() -> PaperDimensions:
+    """Compute page dimensions from the live config each time they are needed."""
+    paper = get_paper_dimensions(str(cfg.paper_size).lower())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+    return get_page_dimensions(
+        paper,
+        float(cfg.margin_left_cm), float(cfg.margin_right_cm),  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+        float(cfg.margin_top_cm), float(cfg.margin_bottom_cm)   # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+    )
 
 
 class TableMetadata:
@@ -51,7 +51,7 @@ class CellConfig:
 class ParagraphConfig:
     def __init__(
         self,
-        font_name: str = cfg.default_font,  # pyright: ignore[reportUnknownMemberType]
+        font_name: str | None = None,
         font_size_pt: float = 10.0,
         text_color: Color | str | None = None,
         bold: bool = False,
@@ -59,7 +59,7 @@ class ParagraphConfig:
         underline: bool = False,
         bullet: bool = False
     ):
-        self.font_name: str = font_name
+        self.font_name: str = font_name if font_name is not None else str(cfg.default_font)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         self.font_size_pt: float = font_size_pt
         self.text_color: Color = Color(text_color)
         self.bold: bool = bold
@@ -96,7 +96,7 @@ class Row:
         row_width_cm: float = 0.0           # If this value is 0, the row is as wide as the page margins
     ):
         self.cells: list[Cell] = [cells] if isinstance(cells, Cell) else cells
-        self.row_width_cm: float = row_width_cm if row_width_cm > 0.0 else _page_dimensions.width
+        self.row_width_cm: float = row_width_cm if row_width_cm > 0.0 else _get_page_dimensions().width
         self.min_height_cm: float = min_height_cm
 
         for cell in self.cells:
@@ -129,7 +129,7 @@ class Table:
         
         if Table.are_columns(self.content) and len(self.content) > 0:
             for col in self.content:
-                col.width_cm = 1/len(self.content) * _page_dimensions.width  # pyright: ignore[reportAttributeAccessIssue]
+                col.width_cm = 1/len(self.content) * _get_page_dimensions().width  # pyright: ignore[reportAttributeAccessIssue]
         
     @staticmethod
     def are_columns(items: list[Row] | list[Column]):

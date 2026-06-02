@@ -1,12 +1,16 @@
 from typing import Any
+from pathlib import Path
+
 from BeyondCV.TableBuilder import CVTemplate
 from BeyondCV.Translator import DocxTranslator
+
 from BuildImpl.ProfileMaker import LLMProfileMaker
 from BuildImpl.TemplateMaker import make_template
-from pathlib import Path
+from BuildImpl.custom_config import update
 
 
 def main():
+    update()
     profile = LLMProfileMaker(Path(__file__).parent / "sample_cv.pdf")
     data: dict[str, Any] = profile.get_result_json()
 

@@ -6,8 +6,6 @@ from typing import Any
 from BeyondCV.LLM.utils import safe_parse_json, load_prompt
 from BeyondCV.config import bcv_config as cfg
 
-_always_use_cache: bool = bool(cfg.use_cache)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-
 class LLMInvoker(ABC):
     def __init__(self, path_to_pdf: str | Path, modules: list[str] | None = None) -> None:
         self.pdf_path: str | Path = path_to_pdf
@@ -15,7 +13,7 @@ class LLMInvoker(ABC):
 
         archive_path = self.get_default_archive_path()
         if archive_path.exists():
-            if _always_use_cache:
+            if bool(cfg.use_cache):  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
                 use_cache = "yes"
             else:
                 use_cache = input(

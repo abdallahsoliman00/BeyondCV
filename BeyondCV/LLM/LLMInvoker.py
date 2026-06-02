@@ -22,7 +22,7 @@ class LLMInvoker(ABC):
                     f"Archived profile found for '{self.file_name}' at {archive_path}.\nUse cached version? [Y/n]: "
                 ).strip().lower()
             if use_cache in ("", "y", "yes"):
-                with open(archive_path, "r") as f:
+                with open(archive_path, "r", encoding="utf-8") as f:
                     self.result_json = json.load(f)
                 self.result_archive: str | Path = str(archive_path)  # pyright: ignore[reportRedeclaration]
                 print(f"Loaded profile from archive: {archive_path}")
@@ -33,9 +33,6 @@ class LLMInvoker(ABC):
 
         prompt: str = load_prompt(path_to_pdf, modules=modules)
         self.result_json: Any = safe_parse_json(self.invoke(prompt))
-
-        print("Data retrieved.")
-
         self.result_archive: str | Path = self.archive_json()
 
     def get_archive_location(self) -> str | Path:
@@ -75,7 +72,7 @@ class LLMInvoker(ABC):
         json_archive: Path = self.get_default_archive_path()
         json_archive.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(json_archive, "w") as f:
+        with open(json_archive, "w", encoding="utf-8") as f:
             json.dump(self.result_json, f, indent=2, ensure_ascii=False)
 
         print(f"Archived profile JSON in {json_archive}")

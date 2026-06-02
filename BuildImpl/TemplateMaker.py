@@ -96,7 +96,7 @@ def make_template() -> CVTemplate:
                 ]),
             )
         ],
-        header=HeaderFooterBase(image_path=Path(__file__).parent / "logo-placeholder.jpg", image_config=ImgConfig(height=2)),
+        header=HeaderFooterBase(image_path=Path(__file__).parent / "logo-placeholder.jpg", image_config=ImgConfig(height_cm=2)),
     )
 
 

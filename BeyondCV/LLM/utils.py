@@ -1,8 +1,36 @@
 import json
 import pypdf
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from BeyondCV.LLM.CVFields import BASE_TEMPLATE, build_extra_fields_text
+import zipfile
+import xml.etree.ElementTree as ET
+
+
+def extract_text_from_docx(docx_path: str | Path):
+    ns = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+    para_tag = ns + 'p'
+    text_tag = ns + 't'
+    
+    paragraphs_list: list[str] = []
+    
+    with zipfile.ZipFile(docx_path) as docx:
+        # Read the core XML content
+        xml_content = docx.read('word/document.xml')
+        tree = ET.fromstring(xml_content)
+        
+        # 1. Find every individual paragraph block first
+        for p_node in tree.iter(para_tag):
+            
+            # 2. Gather only the text fragments inside this specific paragraph
+            text_nodes = p_node.iter(text_tag)
+            p_text = "".join(node.text for node in text_nodes if node.text)
+            
+            # 3. Only keep it if the paragraph isn't completely empty
+            if p_text.strip():
+                paragraphs_list.append(p_text)
+                
+    return '\n'.join(paragraphs_list)
 
 
 def extract_text_from_pdf(pdf_path: str | Path) -> str:
@@ -23,8 +51,25 @@ def extract_text_from_pdf(pdf_path: str | Path) -> str:
     return text
 
 
-def load_prompt(path_to_pdf: str | Path, modules: list[str] | None = None) -> str:
+def extract_text_from_txt(path: str | Path) -> str:
+    with open(path, "r") as f:
+        return f.read()
+
+
+def load_prompt(path_to_file: str | Path, modules: list[str] | None = None) -> str:
+    path_to_file = Path(path_to_file)
     if not modules: modules = []
+
+    file_extractor: Callable[[str | Path], str]
+    if path_to_file.suffix == ".pdf":
+        file_extractor = extract_text_from_pdf
+    elif path_to_file.suffix == ".docx":
+        file_extractor = extract_text_from_docx
+    else:
+        try:
+            file_extractor = extract_text_from_pdf
+        except Exception:
+            file_extractor = extract_text_from_txt
 
     prompt_path = Path(__file__).parent / "prompt.txt"
 
@@ -34,7 +79,7 @@ def load_prompt(path_to_pdf: str | Path, modules: list[str] | None = None) -> st
     return prompt_template.format(
         json_template=json.dumps(BASE_TEMPLATE, indent=2),
         extra_fields=build_extra_fields_text(modules),
-        extracted_text=extract_text_from_pdf(path_to_pdf),
+        extracted_text=file_extractor(path_to_file),
     )
 
 

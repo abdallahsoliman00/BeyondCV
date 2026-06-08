@@ -3,7 +3,7 @@ BASE_TEMPLATE = {
     "title": "Title",
     "profile_summary": "summary",
     "education": [
-        {"institute": "institute name", "degree": "degree name", "year": "year"}
+        {"institute": "institute name", "degree": "degree name", "year": "year of graduation"}
     ],
     "experience": [
         {
@@ -24,7 +24,8 @@ BASE_TEMPLATE = {
         {"group_name": "Soft Skills", "items": ["Communication", "Problem Solving", "etc..."]},
         {"group_name": "Programming Languages", "items": ["Python", "C", "C++"]},
         {"group_name": "Software Tools", "items": ["CMake", "git", "Docker"]},
-        {"group_name": "Other Group", "items": ["item", "etc..."]},
+        {"group_name": "Other Skills", "items": ["item", "etc..."]},
+        {"group_name": "Create and remove groups as you see fit", "items": ["item", "etc..."]},
     ],
     "languages": [
         {"language": "Arabic", "proficiency": "Native"}

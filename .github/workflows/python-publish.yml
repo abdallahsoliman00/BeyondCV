@@ -12,8 +12,10 @@ jobs:
     environment: PyPI Publish
 
     steps:
-      - name: Checkout repository
+      - name: Checkout latest code from main
         uses: actions/checkout@v6
+        with:
+          ref: main
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v5

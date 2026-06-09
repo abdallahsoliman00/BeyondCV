@@ -16,7 +16,7 @@ class DocTranslator(ABC):
         if not Path(document_name).suffix:
             raise ValueError(f"document_name must include a file extension (e.g. 'my_cv.docx'), got: '{document_name}'")
 
-        doc_location: Path = Path.home() / ".beyondcv" / "outfiles" / f"{document_name}"
+        doc_location: Path = self.get_save_location() / f"{document_name}.docx"
         doc_location.parent.mkdir(parents=True, exist_ok=True)
         self.doc_location: Path = doc_location
         self.tables: list[Table | PageBreak] = template.build(data)
@@ -24,6 +24,10 @@ class DocTranslator(ABC):
         self.footer: HeaderFooterBase | None = template.footer
         self.first_page_header: HeaderFooterBase | None = template.first_page_header
         self.first_page_footer: HeaderFooterBase | None = template.first_page_footer
+
+
+    def get_save_location(self) -> Path:
+        return Path.home() / ".beyondcv" / "outfiles"
 
 
     @abstractmethod

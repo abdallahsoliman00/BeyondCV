@@ -7,9 +7,9 @@ from BeyondCV.LLM.utils import safe_parse_json, load_prompt
 from BeyondCV.config import bcv_config as cfg
 
 class LLMInvoker(ABC):
-    def __init__(self, path_to_pdf: str | Path, modules: list[str] | None = None) -> None:
-        self.pdf_path: str | Path = path_to_pdf
-        self.file_name: str = Path(path_to_pdf).stem
+    def __init__(self, path_to_cv: str | Path, modules: list[str] | None = None) -> None:
+        self.cv_path: str | Path = path_to_cv
+        self.file_name: str = Path(path_to_cv).stem
 
         archive_path = self.get_default_archive_path()
         if archive_path.exists():
@@ -26,15 +26,16 @@ class LLMInvoker(ABC):
                 print(f"Loaded profile from archive: {archive_path}")
                 return
 
+        print(f"Extracting data from '{path_to_cv}'")
 
-        print(f"Extracting data from '{path_to_pdf}'")
-
-        prompt: str = load_prompt(path_to_pdf, modules=modules)
+        prompt: str = load_prompt(path_to_cv, modules=modules)
         self.result_json: Any = safe_parse_json(self.invoke(prompt))
         self.result_archive: str | Path = self.archive_json()
 
+
     def get_archive_location(self) -> str | Path:
         return self.result_archive
+
 
     def get_result_json(self) -> Any:
         return self.result_json
@@ -43,7 +44,7 @@ class LLMInvoker(ABC):
     @abstractmethod
     def invoke(self, prompt: str) -> str:
         """
-        Prompts the LLM with the PDF and returns the json object as a string.
+        Prompts the LLM with the PDF or Word Document and returns the json object as a string.
         This function handles everything LLM related; from getting the prompt to prompting thr LLM and receiving the output.
 
         Args:
@@ -54,8 +55,10 @@ class LLMInvoker(ABC):
         """
         pass
 
+
     def get_default_archive_path(self) -> Path:
         return Path.home() / ".beyondcv" / "archive" / f"{self.file_name}.json"
+
 
     def archive_json(self) -> str | Path:
         """

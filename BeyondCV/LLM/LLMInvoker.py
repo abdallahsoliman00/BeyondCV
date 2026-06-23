@@ -10,6 +10,7 @@ class LLMInvoker(ABC):
     def __init__(self, path_to_cv: str | Path, modules: list[str] | None = None) -> None:
         self.cv_path: str | Path = path_to_cv
         self.file_name: str = Path(path_to_cv).stem
+        self.modules: list[str] | None = modules
 
         archive_path = self.get_default_archive_path()
         if archive_path.exists():
@@ -54,6 +55,13 @@ class LLMInvoker(ABC):
             Returns the LLM response text. Text sanitisation happens in the __init__ function.
         """
         pass
+
+
+    def regenerate_cv(self):
+        print(f"Extracting data from '{self.cv_path}'")
+        prompt: str = load_prompt(self.cv_path, modules=self.modules)
+        self.result_json = safe_parse_json(self.invoke(prompt))
+        self.result_archive = self.archive_json()
 
 
     def get_default_archive_path(self) -> Path:

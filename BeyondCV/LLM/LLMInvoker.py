@@ -57,11 +57,17 @@ class LLMInvoker(ABC):
         pass
 
 
-    def regenerate_cv(self):
-        print(f"Extracting data from '{self.cv_path}'")
-        prompt: str = load_prompt(self.cv_path, modules=self.modules)
-        self.result_json = safe_parse_json(self.invoke(prompt))
-        self.result_archive = self.archive_json()
+    def regenerate_cv(self) -> bool:
+        try:
+            print(f"Extracting data from '{self.cv_path}'")
+            prompt: str = load_prompt(self.cv_path, modules=self.modules)
+            self.result_json = safe_parse_json(self.invoke(prompt))
+            self.result_archive = self.archive_json()
+            return True
+
+        except Exception as e:
+            print(f"Error: Failed to regenerate CV: {e}")
+            return False
 
 
     def get_default_archive_path(self) -> Path:

@@ -9,14 +9,14 @@ class DocTranslator(ABC):
         """
         Intialises the translator, making sure the save location exists.
         Args:
-            document_name: Name of the output document. This MUST contain the file extension so that the file is correctly saved.
+            document_name: Name of the output document. This shuld prefereably contain the file extension so that the file is correctly saved.
             template: The CV template created that will be translated. 
             data: The profile's data as a Python dict (the data JSON).
         """
         if not Path(document_name).suffix:
-            raise ValueError(f"document_name must include a file extension (e.g. 'my_cv.docx'), got: '{document_name}'")
+            document_name += ".docx"
 
-        doc_location: Path = self.get_save_location() / f"{document_name}.docx"
+        doc_location: Path = self.get_save_location() / f"{document_name}"
         doc_location.parent.mkdir(parents=True, exist_ok=True)
         self.doc_location: Path = doc_location
         self.tables: list[Table | PageBreak] = template.build(data)
